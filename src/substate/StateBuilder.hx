@@ -39,14 +39,13 @@
 package substate;
 
 import substate.SubStateMachine;
-import substate.SubStateMachine;
 
-class StateBuilder {
+class StateBuilder<T> {
     //----------------------------------
     //  CONSTS
     //----------------------------------
-    private static var NO_ENTER:IEnter = new NoopEnter();
-    private static var NO_EXIT:IExit = new NoopExit();
+    private static var NO_ENTER:IEnter = new NoopEnter<T>();
+    private static var NO_EXIT:IExit = new NoopExit<T>();
 
     //--------------------------------------------------------------------------
     //
@@ -60,20 +59,22 @@ class StateBuilder {
     //  PUBLIC METHODS
     //
     //--------------------------------------------------------------------------
-    public function build(stateName:String, params:Dynamic = null):IState {
+    public function build(stateName:String, params:Dynamic = null):IState<T> {
         if (params == null ){
             params = {};
         }
 
         var parentName = Reflect.hasField(params, "parent") ? cast Reflect.getProperty(params, "parent") : SubStateMachine.NO_PARENT;
         var froms = getFroms(params);
+        var owner = Reflect.hasField(params, "owner") ? cast Reflect.getProperty(params, "owner") : null;
         var onEnter = Reflect.hasField(params, "enter") ? cast Reflect.getProperty(params, "enter") : NO_ENTER;
         var onExit = Reflect.hasField(params, "exit") ? cast Reflect.getProperty(params, "exit") : NO_EXIT;
 
-        return new BuiltState(
+        return new BuiltState<T>(
             stateName,
             parentName,
             froms,
+            owner,
             onEnter,
             onExit
         );
@@ -94,7 +95,7 @@ class StateBuilder {
     }
 }
 
-private class BuiltState implements IState {
+private class BuiltState<T> implements IState<T> {
     //----------------------------------
     //  vars
     //----------------------------------
@@ -106,10 +107,11 @@ private class BuiltState implements IState {
     //  CONSTRUCTOR
     //
     //--------------------------------------------------------------------------
-    public function new(stateName:String, stateParentName:String, stateFroms:Array<String>, enter:IEnter, exit:IExit) {
+    public function new(stateName:String, stateParentName:String, stateFroms:Array<String>, stateOwner:T, enter:IEnter, exit:IExit) {
         name = stateName;
         parentName = stateParentName;
         froms = stateFroms;
+        owner = stateOwner;
         _onEnter = enter;
         _onExit = exit;
     }
@@ -120,6 +122,7 @@ private class BuiltState implements IState {
     public var name(default, null):String;
     public var parentName(default, null):String;
     public var froms(default, null):Array<String>;
+    public var owner(default, null):T;
 
     public function enter(toState:String, fromState:String, currentState:String):Void {
         _onEnter.enter(toState, fromState, currentState);
@@ -129,7 +132,7 @@ private class BuiltState implements IState {
     }
 }
 
-private class NoopEnter implements IEnter {
+private class NoopEnter<T> implements IEnter {
     //--------------------------------------------------------------------------
     //
     //  CONSTRUCTOR
@@ -150,7 +153,7 @@ private class NoopEnter implements IEnter {
     }
 }
 
-private class NoopExit implements IExit {
+private class NoopExit<T> implements IExit {
     //--------------------------------------------------------------------------
     //
     //  CONSTRUCTOR

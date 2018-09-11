@@ -38,13 +38,13 @@
 
 package substate;
 
-interface ISubStateMachine {
+interface ISubStateMachine<T> {
 
     /**
 	 * Adds a new state
 	 * @param state The state to add
 	 **/
-    function addState(state:IState):Void;
+    function addState(state:IState<T>):Void;
 
     /**
 	 * Removes a state by Unique ID
@@ -82,6 +82,8 @@ interface ISubStateMachine {
 	 * @param stateName	The name of the state to transition to
 	 **/
 	function doTransition(stateName:String):Void;
+
+	function update(dt:Float):Void;
 
     /**
 	 * Sets the first state, calls enter callback and dispatches TRANSITION_COMPLETE

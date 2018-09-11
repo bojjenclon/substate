@@ -41,16 +41,16 @@ package substate;
 import substate.core.ObserverTransitionCollection;
 import haxe.ds.StringMap;
 
-class SubStateMachine implements ISubStateMachine {
+class SubStateMachine<T> implements ISubStateMachine<T> {
 	//----------------------------------
 	//  CONSTS
 	//----------------------------------
     public static inline var UNINITIALIZED_STATE:String = "uninitializedState";
 
     // NOOPs
-    private static var UNKNOWN_STATE:IState = new NoopState("unknown.state");
-    private static var UNKNOWN_PARENT_STATE:IState = new NoopState("unknown.parent.state");
-    private static var NO_PARENT_STATE:IState = new NoopState("no.parent.state");
+    private static var UNKNOWN_STATE:IState<T> = new NoopState("unknown.state");
+    private static var UNKNOWN_PARENT_STATE:IState<T> = new NoopState("unknown.parent.state");
+    private static var NO_PARENT_STATE:IState<T> = new NoopState("no.parent.state");
 
     // Expected IState Constants
     public static inline var WILDCARD:String = "*";
@@ -60,7 +60,7 @@ class SubStateMachine implements ISubStateMachine {
 	//  vars
 	//----------------------------------
 	/* @private */
-	private var _nameToStates:StringMap<IState>;
+	private var _nameToStates:StringMap<IState<T>>;
 
     /* @private */
     private var _notificationCache:Array<Array<String>>;
@@ -82,7 +82,7 @@ class SubStateMachine implements ISubStateMachine {
 	//--------------------------------------------------------------------------
 	public function init():Void {
         currentState = UNINITIALIZED_STATE;
-        _nameToStates = new StringMap<IState>();
+        _nameToStates = new StringMap<IState<T>>();
         _notificationCache = new Array<Array<String>>();
 	 	_observerCollection = new ObserverTransitionCollection();
 	 	_observerCollection.init();
@@ -104,7 +104,7 @@ class SubStateMachine implements ISubStateMachine {
 	 * Adds a new state
 	 * @param state The state to add
 	 **/
-    public function addState(state:IState):Void {
+    public function addState(state:IState<T>):Void {
         if (_nameToStates.exists(state.name)) {
             removeState(state.name);
         }
@@ -202,6 +202,11 @@ class SubStateMachine implements ISubStateMachine {
         dumpNotificationCache();
     }
 
+    public function update(dt:Float):Void {
+        var state:IState<T> = getStateByUID(currentState);
+        state.update(dt, state.name);
+    }
+
     /**
 	 * Sets the first state, calls enter callback and dispatches TRANSITION_COMPLETE
 	 * These will only occour if no state is defined
@@ -248,11 +253,11 @@ class SubStateMachine implements ISubStateMachine {
 	//
 	//--------------------------------------------------------------------------
 	private function executeEnterForStack(stateTo:String, stateFrom:String):Void {
-		var toStateTree:Array<IState> = getAllStatesChildToRootByName(stateTo);
+		var toStateTree:Array<IState<T>> = getAllStatesChildToRootByName(stateTo);
         toStateTree.reverse();
-        var fromStateTree:Array<IState> = getAllStatesChildToRootByName(stateFrom);
+        var fromStateTree:Array<IState<T>> = getAllStatesChildToRootByName(stateFrom);
         for(i in 0...toStateTree.length) {
-            var state:IState = toStateTree[i];
+            var state:IState<T> = toStateTree[i];
             // is this state in the last states tree
             if(fromStateTree.indexOf(state) >= 0) {
                 // skip it as this state has already been entered
@@ -264,7 +269,7 @@ class SubStateMachine implements ISubStateMachine {
 
     private function executeExitForStack(state:String, stateTo:String, n:Int):Void {
         getStateByUID(state).exit(state, stateTo, state);
-        var parentState:IState = getStateByUID(state);
+        var parentState:IState<T> = getStateByUID(state);
         for (i in 0 ... n - 1) {
             parentState = getParentStateByName(parentState.name); // parentState.parent;
             parentState.exit(state, stateTo, parentState.name);
@@ -288,7 +293,7 @@ class SubStateMachine implements ISubStateMachine {
 
     private function getAllStatesForState(stateName:String):Array<String> {
         var names = new Array<String>();
-        var states:Array<IState> = getAllStatesChildToRootByName(stateName);
+        var states:Array<IState<T>> = getAllStatesChildToRootByName(stateName);
         for(state in states) {
             names.push(state.name);
         }
@@ -306,10 +311,10 @@ class SubStateMachine implements ISubStateMachine {
         var froms:Int = 0;
         var tos:Int = 0;
         if (hasState(stateFrom) && hasState(stateTo)) {
-            var fromState:IState = getStateByUID(stateFrom);
+            var fromState:IState<T> = getStateByUID(stateFrom);
             while ((fromState != null) && (fromState != UNKNOWN_STATE) && (fromState != UNKNOWN_PARENT_STATE)) {
                 tos = 0;
-                var toState:IState = getStateByUID(stateTo);
+                var toState:IState<T> = getStateByUID(stateTo);
                 while ((toState != null) && (toState != UNKNOWN_STATE) && (toState != UNKNOWN_PARENT_STATE)) {
                     if (fromState==toState) {
                         // They are in the same brach or have
@@ -336,10 +341,10 @@ class SubStateMachine implements ISubStateMachine {
         || doTransitionsMatch(fromStateAllNames, toStateFroms));
     }
 
-	private function getAllStatesChildToRootByName(name:String):Array<IState> {
-		var states:Array<IState> = new Array<IState>();
+	private function getAllStatesChildToRootByName(name:String):Array<IState<T>> {
+		var states:Array<IState<T>> = new Array<IState<T>>();
 		while (hasState(name)) {
-			var state:IState = getStateByUID(name);
+			var state:IState<T> = getStateByUID(name);
 			states.push(state);
 			if (state.parentName == NO_PARENT) {
 				break;
@@ -363,13 +368,13 @@ class SubStateMachine implements ISubStateMachine {
 	 * Gets a state by it's name
 	 * @param name of the state
 	 **/
-    private function getStateByUID(name:String):IState {
+    private function getStateByUID(name:String):IState<T> {
         return hasState(name) ? _nameToStates.get(name) : UNKNOWN_STATE;
     }
 
 	private function getAllFromsForStateByName(toState:String):Array<String> {
 		var froms:Array<String> = new Array<String>();
-		var states:Array<IState> = getAllStatesChildToRootByName(toState);
+		var states:Array<IState<T>> = getAllStatesChildToRootByName(toState);
         var stop:Bool = false;
         for (state in states) {
             for (fromName in state.froms){
@@ -385,11 +390,11 @@ class SubStateMachine implements ISubStateMachine {
 		return froms;
 	}
 
-    private function getParentStateByName(name:String):IState {
+    private function getParentStateByName(name:String):IState<T> {
         if(!hasState(name)){
             return UNKNOWN_STATE;
         } else {
-            var stateName:IState = getStateByUID(name);
+            var stateName:IState<T> = getStateByUID(name);
             var parentName:String = stateName.parentName;
             if(parentName == NO_PARENT){
                 return NO_PARENT_STATE;
@@ -402,7 +407,7 @@ class SubStateMachine implements ISubStateMachine {
     }
 }
 
-private class NoopState implements IState {
+private class NoopState<T> implements IState<T> {
     //--------------------------------------------------------------------------
     //
     //  CONSTRUCTOR
@@ -418,6 +423,6 @@ private class NoopState implements IState {
     public var name(default, null):String;
     public var parentName(default, null):String;
     public var froms(default, null):Array<String>;
-    public function enter(toState:String, fromState:String, currentState:String):Void {}
-    public function exit(fromState:String, toState:String, currentState:String = null):Void {}
+    public function enter(toState:String, fromState:String, currentState:String, owner:T):Void {}
+    public function exit(fromState:String, toState:String, currentState:String = null, owner:T = null):Void {}
 }

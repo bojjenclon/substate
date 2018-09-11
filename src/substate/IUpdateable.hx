@@ -38,20 +38,6 @@
 
 package substate;
 
-interface IState<T> extends IEnter extends IUpdateable extends IExit
-{
-	/** the state's UID **/
-    var name(default, null):String;
-
-	/** the parent state's UID (optional) **/
-    var parentName(default, null):String;
-
-    /**
-     * the state UIDs which can transition to this state
-	 * defaults to None.  Use WILDCARD to allow all states
-	 **/
-    var froms(default, null):Array<String>;
-
-    /* the object this state belongs to */
-    var owner(default, null):T;
+interface IUpdateable {
+	function update(dt:Float, currentState:String = null):Void;
 }
