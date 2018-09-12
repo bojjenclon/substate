@@ -423,6 +423,8 @@ private class NoopState<T> implements IState<T> {
     public var name(default, null):String;
     public var parentName(default, null):String;
     public var froms(default, null):Array<String>;
-    public function enter(toState:String, fromState:String, currentState:String, owner:T):Void {}
-    public function exit(fromState:String, toState:String, currentState:String = null, owner:T = null):Void {}
+    public var owner(default, null):T;
+    public function enter(toState:String, fromState:String, currentState:String):Void {}
+    public function update(dt:Float, currentState:String = null):Void {}
+    public function exit(fromState:String, toState:String, currentState:String = null):Void {}
 }
