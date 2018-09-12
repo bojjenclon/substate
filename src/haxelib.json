@@ -1,12 +1,12 @@
 {
 	"name": "substate",
-	"url": "http://github.com/infinitedescent/substate",
+	"url": "http://github.com/bojjenclon/substate",
 	"license": "MIT",
 	"description": "Substate is a hierarchical finite state machine library.",
 	"version": "0.9.4",
 	"releasenote": "See <a href=\"https://github.com/infinitedescent/substate/blob/master/CHANGES.md\">Changelist",
 	"tags": ["cross","state","statemachine","fsm","infinitedescent","substate"],
-	"contributors": ["infinitedescent"],
+	"contributors": ["infinitedescent", "bojjenclon"],
 	"dependencies":
 	{
 	}
