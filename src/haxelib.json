@@ -4,8 +4,8 @@
 	"license": "MIT",
 	"description": "Substate is a hierarchical finite state machine library.",
 	"version": "0.9.4",
-	"releasenote": "See <a href=\"https://github.com/infinitedescent/substate/blob/master/CHANGES.md\">Changelist",
-	"tags": ["cross","state","statemachine","fsm","infinitedescent","substate"],
+	"releasenote": "See <a href=\"https://github.com/bojjenclon/substate/blob/master/CHANGES.md\">Changelist",
+	"tags": ["cross","state","statemachine","fsm","infinitedescent","substate","bojjenclon"],
 	"contributors": ["infinitedescent", "bojjenclon"],
 	"dependencies":
 	{

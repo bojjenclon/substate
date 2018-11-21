@@ -73,7 +73,9 @@ class SubStateMachine<T> implements ISubStateMachine<T> {
     //  CONSTRUCTOR
     //
     //--------------------------------------------------------------------------
-    public function new() {}
+    public function new(owner:T) {
+        this.owner = owner;
+    }
 
 	//--------------------------------------------------------------------------
 	//
@@ -105,6 +107,7 @@ class SubStateMachine<T> implements ISubStateMachine<T> {
 	 * @param state The state to add
 	 **/
     public function addState(state:IState<T>):Void {
+        state.owner = owner;
         if (_nameToStates.exists(state.name)) {
             removeState(state.name);
         }
@@ -246,6 +249,8 @@ class SubStateMachine<T> implements ISubStateMachine<T> {
     public function unsubscribe(observer:IObserverTransition):Void {
         _observerCollection.unsubscribe(observer);
     }
+
+    public var owner(default, null):T;
 
     //--------------------------------------------------------------------------
 	//

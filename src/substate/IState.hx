@@ -53,5 +53,6 @@ interface IState<T> extends IEnter extends IUpdateable extends IExit
     var froms(default, null):Array<String>;
 
     /* the object this state belongs to */
+    @:allow(substate.ISubStateMachine)
     var owner(default, null):T;
 }

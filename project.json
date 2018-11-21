@@ -3,13 +3,13 @@
 	{
 		"name": "Substate",
 		"description": "A simple hierarchical finite state machine",
-		"version": "0.9.3",
+		"version": "0.9.4",
 		"id": "substate",
 		"devDependencies": 
 		{
 			"hamcrest": "1.x",
 			"munit": "2.x",
-            "mockatoo": "3.x"
+			"mockatoo": "3.x"
 		},
 		"dependencies": 
 		{
@@ -17,6 +17,6 @@
 	},
 	"haxelib": 
 	{
-		"user": "infinitedescent"
+		"user": "bojjenclon"
 	}
 }
